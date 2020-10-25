@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.urlencoded({
     extended: false
 }));
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use('/assets', express.static('./assets'));
 
 app.use("/", mainRouter);
 app.use("/test", testRouter);
