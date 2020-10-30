@@ -1,41 +1,45 @@
 const testRouter = require('express').Router();
 const { createComment, deleteComment, editComment } = require('../controllers/comment.controller');
+const { likePost, getPostLikes, unLikePost } = require('../controllers/like.controller');
 const { createPost, listPosts, searchPost, getPost, deletePost } = require('../controllers/post.controller');
-const { signUp, authenticate, getUser, listUsers, searchUsers } = require('../controllers/user.controller');
-const postModel = require('../dataBase/models/post.model');
-const userModel = require('../dataBase/models/user.model');
-const requireAuth = require('../utils/requireAuth');
-const { ValidateUserSignUP, ValidateUserSignIn, ValidateCreatePost, ValidateComment } = require('../utils/validators');
-
+const { getUser, listUsers, searchUsers, editUserDetails, deleteUser } = require('../controllers/user.controller');
+const { ValidateCreatePost, ValidateComment, ValidateUpdateUser } = require('../utils/validators');
 
 testRouter.get('/', (req, res, next) => {
-    const response = { message: "This is Test API" }
+    const response = { message: "This is Test API" };
     return res.status(200).json({...response });
-})
+});
 
-//signUp and signIn
 
-testRouter.post('/signUp', ValidateUserSignUP, signUp);
-testRouter.post('/signIn', ValidateUserSignIn, authenticate)
+// //user
 
-//user
+// testRouter.get('/users', listUsers);
+// testRouter.get('/user/:targetUser', getUser);
+// testRouter.get('/users/:search', searchUsers);
 
-testRouter.get('/users', listUsers);
-testRouter.get('/user/:targetUser', getUser);
-testRouter.get('/users/:search', searchUsers);
+// testRouter.put('/user/:userId', ValidateUpdateUser, editUserDetails);
+// testRouter.delete('/user/:userId', deleteUser);
 
-//post
 
-testRouter.post('/posts', [requireAuth, ValidateCreatePost], createPost);
-testRouter.get('/posts', listPosts);
-testRouter.get('/post/:postId', getPost);
-testRouter.get('/posts/:search', searchPost);
-testRouter.delete('/post/:postId', requireAuth, deletePost)
+// //post
 
-//comment
+// testRouter.post('/posts', [ValidateCreatePost], createPost);
+// testRouter.get('/posts', listPosts);
+// testRouter.get('/post/:postId', getPost);
+// testRouter.get('/posts/:search', searchPost);
+// testRouter.delete('/post/:postId', deletePost)
 
-testRouter.post('/post/:postId/comment', [requireAuth, ValidateComment], createComment);
-testRouter.put('/comment/:commentId', [requireAuth, ValidateComment], editComment)
-testRouter.delete('/comment/:commentId', requireAuth, deleteComment);
+// //comment
+
+// testRouter.post('/post/:postId/comment', [ValidateComment], createComment);
+// testRouter.put('/comment/:commentId', [ValidateComment], editComment)
+// testRouter.delete('/comment/:commentId', deleteComment);
+
+
+// //like
+
+// testRouter.post('/post/:postId/like', likePost)
+// testRouter.post('/post/:postId/unlike', unLikePost)
+// testRouter.get('/post/:postId/likes', getPostLikes)
 
 module.exports = testRouter;

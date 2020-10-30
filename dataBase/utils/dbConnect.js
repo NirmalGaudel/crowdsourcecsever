@@ -7,11 +7,18 @@ const dbOptions = {
     useFindAndModify: false,
     useCreateIndex: true
 }
-const uri = process.env.ATLAS_DBURL;
+const local_uri = process.env.LOCAL_DBURL;
+const atlas_uri = process.env.ATLAS_DBURL;
+
+const uri = (process.env.ENVIROMENT == "Production") ? atlas_uri : local_uri;
+
 mongoose.connect(uri, dbOptions);
 
 mongoose.connection
-    .on("error", _ => console.log("> dataBase error occured"))
-    .once("open", _ => console.log("> Database Connected"));
+    .on("error", _ => {
+        console.log("> dataBase error occured");
+    })
+    .once("open", _ => console.log(`>${process.env.ENVIROMENT=='Production'?'Atlas':'Local'} Database Connected`));
+
 
 module.exports = mongoose;

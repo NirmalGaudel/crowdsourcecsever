@@ -1,11 +1,12 @@
 const express = require("express");
 const path = require('path')
 const app = express();
-const mongoose = require("./dataBase/utils/dbConnect");
 require("dotenv").config();
 const mainRouter = require("./routers/mainRouter");
 const testRouter = require("./routers/testRouter");
 const cors = require("cors");
+const requireAuth = require("./utils/requireAuth");
+const authRouter = require("./routers/authRouter");
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({
@@ -13,8 +14,9 @@ app.use(express.urlencoded({
 }));
 app.use('/assets', express.static('./assets'));
 
-app.use("/", mainRouter);
-app.use("/test", testRouter);
+app.use("/api", requireAuth, mainRouter);
+app.use("/auth", authRouter)
+app.use("/test", requireAuth, testRouter);
 app.get("/favicon.ico", (req, res) => {
     res.sendFile("./favicon.ico", {
         root: "./"

@@ -33,26 +33,16 @@ async function createPost(req, res) {
 
 async function listPosts(req, res) {
     const options = {};
-    try {
-        const posts = await mongoose.models.Posts.find(options).populate('author', ['userName', 'imagePath', 'verified']);
-        res.status(200).send(posts);
-    } catch (error) {
-        res.status(500).send({ message: "Internal server error" });
-    }
+    const postsList = await mongoose.models.Posts.find(options).populate('author', ['_id', 'userName', 'imagePath', 'verified']).catch(_ => null);
+    return res.status(postsList ? 200 : 500).json(postsList || { message: 'Internal database error' });
+
 }
 
 async function getPost(req, res) {
-    const postId = req.params.postId;
-    let status = 200;
-    if (!mongoose.isValidObjectId(postId)) {
-        return res.status(400).json({ message: "invalid PostId" });
-    };
-    const result = await mongoose.models.Posts.findById(postId).catch(_ => {
-        status = 500;
-        return null
-    });
-    if (result == null && status == 200) status = 404;
-    return res.status(status || 200).send(result);
+    const postId = req.params.postId || null;
+    const postData = await mongoose.models.Posts.findOne({ _id: postId }).populate('author', ['_id', 'userName', 'imagePath', 'verified']).catch(_ => null);
+    return res.status(postData ? 200 : 400).json(postData || { message: "invalid PostId" })
+
 }
 
 async function searchPost(req, res) {
