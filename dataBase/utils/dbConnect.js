@@ -10,7 +10,7 @@ const dbOptions = {
 const local_uri = process.env.LOCAL_DBURL;
 const atlas_uri = process.env.ATLAS_DBURL;
 
-const uri = (process.env.ENVIROMENT == "Production") ? atlas_uri : local_uri;
+const uri = (process.env.ENVIRONMENT == "Production") ? atlas_uri : local_uri;
 
 mongoose.connect(uri, dbOptions);
 
