@@ -16,6 +16,13 @@ async function createComment(req, res) {
     })
 }
 
+async function getComment(req, res) {
+    const commentId = req.params.commentId || '';
+    const comment = await mongoose.models.Comments.findById(commentId).catch(e => null);
+    res.status(comment ? 200 : 400).send(comment || { message: "comment not found" });
+
+}
+
 async function deleteComment(req, res) {
     try {
 
@@ -38,6 +45,8 @@ async function deleteComment(req, res) {
 async function editComment(req, res) {
     try {
         const cmtId = req.params.commentId;
+        const comment = req.body.commentContent;
+        if (!comment) return res.status(400).send({ msg: "commentContent is required for a comment" });
         if (!mongoose.isValidObjectId(cmtId)) return res.status(400).send({ msg: "invalid commentId" });
         const commentData = await mongoose.models.Comments.findById(cmtId).catch(_ => null);
         if (!commentData) return res.status(404).send({ msg: "comment not found" });
@@ -56,4 +65,4 @@ async function getpostComments(req, res) {
     res.send(comments)
 }
 
-module.exports = { createComment, deleteComment, editComment, getpostComments };
+module.exports = { createComment, getComment, deleteComment, editComment, getpostComments };

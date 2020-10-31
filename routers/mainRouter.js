@@ -1,5 +1,5 @@
 const mainRouter = require('express').Router();
-const { createComment, deleteComment, editComment, getpostComments } = require('../controllers/comment.controller');
+const { createComment, deleteComment, editComment, getpostComments, getComment } = require('../controllers/comment.controller');
 const { likePost, getPostLikes, unLikePost, likeComment, unLikeComment, getCommentLikes } = require('../controllers/like.controller');
 const { createPost, listPosts, searchPost, getPost, deletePost } = require('../controllers/post.controller');
 const { getPopularTags, searchTag, getPostsByTag } = require('../controllers/tag.controller');
@@ -35,6 +35,7 @@ mainRouter.delete('/post/:postId', manageTagsForDeletePost, deletePost)
 
 mainRouter.get('/post/:postId/comments', getpostComments);
 mainRouter.post('/post/:postId/comment', [ValidateComment], createComment);
+mainRouter.get('/comment/:commentId', getComment);
 mainRouter.put('/comment/:commentId', [ValidateComment], editComment)
 mainRouter.delete('/comment/:commentId', deleteComment);
 
@@ -52,6 +53,6 @@ mainRouter.get("/comment/:commentId/likes", getCommentLikes)
 
 mainRouter.get("/tags", getPopularTags);
 mainRouter.get("/tags/:searchString", searchTag);
-mainRouter.get('/posts/:tag', getPostsByTag);
+mainRouter.get('/tag/:tag', getPostsByTag);
 
 module.exports = mainRouter;

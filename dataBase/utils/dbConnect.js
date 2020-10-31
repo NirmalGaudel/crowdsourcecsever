@@ -11,6 +11,7 @@ const local_uri = process.env.LOCAL_DBURL;
 const atlas_uri = process.env.ATLAS_DBURL;
 
 const uri = (process.env.ENVIRONMENT == "Production") ? atlas_uri : local_uri;
+console.log(uri);
 
 mongoose.connect(uri, dbOptions);
 
@@ -18,7 +19,7 @@ mongoose.connection
     .on("error", _ => {
         console.log("> dataBase error occured");
     })
-    .once("open", _ => console.log(`>${process.env.ENVIROMENT=='Production'?'Atlas':'Local'} Database Connected`));
+    .once("open", _ => console.log(process.env.ENVIRONMENT, 'Database Connected'));
 
 
 module.exports = mongoose;

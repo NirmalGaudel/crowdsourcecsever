@@ -12,9 +12,7 @@ const commentSchema = new mongoose.Schema({
         maxlength: [2000, 'commentContent must have less than 2000 characters ']
     },
     likes: {
-        type: ["ObjectId"],
-        ref: 'Users',
-        required: true,
+        type: [{ type: "ObjectId", ref: "Users" }],
         default: []
     },
     postId: {

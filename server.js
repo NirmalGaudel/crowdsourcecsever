@@ -12,16 +12,12 @@ app.use(express.json());
 app.use(express.urlencoded({
     extended: false
 }));
+app.get('/', (req, res) => res.sendFile("./index.html", { root: './' }));
 app.use('/assets', express.static('./assets'));
-
 app.use("/auth", authRouter)
 app.use("/api", requireAuth, mainRouter);
 app.use("/test", testRouter);
-app.get("/favicon.ico", (req, res) => {
-    res.sendFile("./favicon.ico", {
-        root: "./"
-    });
-})
+app.get("/favicon.ico", (req, res) => res.sendFile("./favicon.ico", { root: "./" }));
 
 app.use((req, res, next) => {
     const error = new Error('Not found');

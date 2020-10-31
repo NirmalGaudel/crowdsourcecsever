@@ -59,7 +59,7 @@ async function unLikeComment(req, res) {
 
 async function getCommentLikes(req, res) {
     const commentId = req.params.commentId || '';
-    const commentLikes = await mongoose.models.Comments.findById(commentId).populate('likes', ['_id', 'userName', 'imagePath']).catch(e => []).then(d => d.likes);
+    const commentLikes = await mongoose.models.Comments.findById(commentId).populate('likes', ['_id', 'userName', 'imagePath']).then(d => d.likes).catch(e => "this is error");
     return res.send(commentLikes);
 }
 

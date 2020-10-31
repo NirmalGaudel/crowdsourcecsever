@@ -37,14 +37,7 @@ async function listPosts(req, res) {
 
 async function getPost(req, res) {
     const postId = req.params.postId || null;
-    const postData = await mongoose.models.Posts.findOne({ _id: postId }).populate('author', ['_id', 'userName', 'imagePath', 'verified']).select("-__v -reports").catch(_ => null).then(d => {
-        d._doc.numberOfLikes = d.likes.length;
-        d._doc.numberOfComments = d.comments.length;
-        delete d._doc.likes;
-        delete d._doc.comments;
-        return d;
-
-    });
+    const postData = await mongoose.models.Posts.findOne({ _id: postId }).populate('author', ['_id', 'userName', 'imagePath', 'verified']).select("-__v -reports").catch(_ => null);
     return res.status(postData ? 200 : 400).json(postData || { message: "invalid PostId" });
 
 }

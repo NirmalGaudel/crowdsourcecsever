@@ -107,10 +107,13 @@ async function searchUsers(req, res) {
 }
 
 async function validateToken(req, res) {
+    const userInfo = await mongoose.models.Users.findById(req.user.id).select('userName firstName middleName lastName _id imagePath').catch(e => null);
     const responseData = {
-        message: "token valid"
+        message: userInfo ? "verification successfull" : "Invalid token ! Sign In again",
+        token: (req.headers.authorization).split(' ')[1],
+        userInfo: userInfo || {}
     }
-    return res.status(202).json(responseData);
+    return res.status(userInfo ? 202 : 401).json(responseData);
 }
 
 async function editUserDetails(req, res) {
