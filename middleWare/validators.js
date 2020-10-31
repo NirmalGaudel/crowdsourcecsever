@@ -1,4 +1,4 @@
-const { body, param } = require("express-validator");
+const { body } = require("express-validator");
 const mongoose = require("mongoose")
 
 const ValidateUserSignUP = [
@@ -55,11 +55,22 @@ const ValidateUserSignIn = [
 ]
 
 const ValidateCreatePost = [
-    body('isPublic').optional().isBoolean().withMessage("isPublic is boolean value"),
     body('postTitle').optional().isLength({ max: 100 }).withMessage("postTitle must have less than 100 characters"),
     body('postContent').notEmpty().withMessage('postContent is required')
     .isLength({ min: 10 }).withMessage('postContent must have more than 10 characters')
-    .isLength({ max: 2000 }).withMessage('postContent must have leaa than 2000 characters')
+    .isLength({ max: 2000 }).withMessage('postContent must have less than 2000 characters'),
+    body('tags').notEmpty().withMessage('post requires tags').toArray().isArray({ min: 5, max: 10 }).withMessage('tags must be an array of min length 5 and max length 10')
+    .custom(tags => {
+        for (let i = 0; i < tags.length; i++) {
+            const tag = tags[i];
+            const taglength = tag.length;
+            if (taglength < 2) throw new Error("a tag must have more than 2 characters" + `, but length of \'${tags[i]}\' is ${taglength} characters`);
+            if (taglength > 32) throw new Error("a tag must have less than 32 characters" + `, but length of \'${tags[i]}\' is ${taglength} characters`);
+            const isInArray = (tags.lastIndexOf(tag) != i);
+            if (isInArray) throw new Error(`duplicate values are not allowed`);
+        }
+        return true;
+    })
 ]
 
 const ValidateComment = [
@@ -86,7 +97,6 @@ const ValidateUpdateUser = [
     .normalizeEmail().isLength({ max: 128 }).withMessage("email must have less than 128 characters")
     .custom(email => {
         return mongoose.models.Users.findOne({ email }).then((err, user) => {
-            // if (err) return Promise.reject('E-mail already in use');
             if (err || user) {
                 return Promise.reject('E-mail already in use');
             }
@@ -103,6 +113,7 @@ const ValidateUpdateUser = [
     .isLength({ max: 20 }).withMessage("lastName must have less than 20 characters"),
     body('gender').optional().isIn(['M', 'F', 'O']).withMessage("gender must be one of ['M','F','O']"),
     body('bio').optional().isLength({ max: 200 }).withMessage("bio must have less than 200 characters"),
+
     body('intrests').optional().custom(intrests => {
         return Promise.reject("Feature not yet been implimented")
     })

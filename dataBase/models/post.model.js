@@ -1,5 +1,13 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
+const mongooseFuzzySearching = require("mongoose-fuzzy-searching");
 const postSchema = require("../schemas/post.schema")
+
+postSchema.plugin(mongooseFuzzySearching, {
+    fields: [
+        { name: "postTitle", minSize: 2, weight: 6 },
+        { name: "postContent", minSize: 2, weight: 3 }
+    ]
+})
 
 postSchema.path('author').validate(async(author) => {
     const UserIDCount = await mongoose.models.Users.countDocuments({ _id: author }).catch(e => { return 0; });
@@ -17,17 +25,6 @@ postSchema.post('save', async function() {
     }
 
 })
-
-postSchema.index({
-    postTitle: 'text',
-    postContent: 'text'
-}, {
-    name: 'PostSearch index',
-    weights: {
-        postTitle: 15,
-        postContent: 10
-    }
-});
 
 
 postSchema.methods.toggleLike = async function(userID) {

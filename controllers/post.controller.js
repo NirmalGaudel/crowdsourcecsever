@@ -1,7 +1,6 @@
 const { validationResult } = require("express-validator");
 const postModel = require("../dataBase/models/post.model");
-const { post } = require("../dataBase/schemas/post.schema");
-const mongoose = require("../dataBase/utils/dbConnect");
+const mongoose = require("mongoose");
 
 async function getPostById(postId) {
     const errorMsg = { message: "invalid PostId" };
@@ -19,11 +18,9 @@ async function createPost(req, res) {
     const result = validationResult(req);
     if (result.errors.length > 0) return res.status(400).json(result.errors);
     try {
-        const { postTitle, postContent, isPublic, postImagesPath, tags } = req.body;
-        const newPost = new postModel({ author: req.user.id, postTitle, postContent, isPublic, postImagesPath, tags });
+        const { postTitle, postContent, postImagesPath, tags } = req.body;
+        const newPost = new postModel({ author: req.user.id, postTitle, postContent, postImagesPath, tags });
         const savedPost = await newPost.save();
-        // delete savedPost.__v;
-        // delete savedPost.createdAt;
         return res.status(201).json(savedPost);
     } catch (error) {
         const { status, message } = error;
@@ -40,23 +37,42 @@ async function listPosts(req, res) {
 
 async function getPost(req, res) {
     const postId = req.params.postId || null;
-    const postData = await mongoose.models.Posts.findOne({ _id: postId }).populate('author', ['_id', 'userName', 'imagePath', 'verified']).catch(_ => null);
-    return res.status(postData ? 200 : 400).json(postData || { message: "invalid PostId" })
+    const postData = await mongoose.models.Posts.findOne({ _id: postId }).populate('author', ['_id', 'userName', 'imagePath', 'verified']).select("-__v -reports").catch(_ => null).then(d => {
+        d._doc.numberOfLikes = d.likes.length;
+        d._doc.numberOfComments = d.comments.length;
+        delete d._doc.likes;
+        delete d._doc.comments;
+        return d;
+
+    });
+    return res.status(postData ? 200 : 400).json(postData || { message: "invalid PostId" });
 
 }
 
 async function searchPost(req, res) {
     const searchString = req.params.search;
     if (!searchString || (searchString.length <= 1)) return res.status(400).json({ message: "provide search with min length 2 " });
-    let responseData = [];
-    try {
-        const reg = new RegExp(`/^${searchString}/`, "i");
-        responseData = await mongoose.models.Posts.find({ $text: { $search: reg } }, { score: { $meta: 'textScore' } }, ).sort({ score: { $meta: "textScore" } })
-        res.send(responseData);
-    } catch (error) {
-        console.log(error);
-        res.sendStatus(500)
+    const responseData = [];
+    const searchResult = await mongoose.models.Posts.fuzzySearch(searchString).catch(e => []);
+    console.log(searchResult);
+
+    for (let i = 0; i < searchResult.length; i++) {
+        const result = searchResult[i];
+        const post = {};
+        post._id = result.id;
+        post.postTitle = result.postTitle;
+        post.postContent = result.postContent;
+        post.numberOfLikes = result.likes.length;
+        post.numberOfComments = result.comments.length;
+        post.views = result.views;
+        post.tags = result.tags;
+        const authorData = await mongoose.models.Users.findById(result.author).select('_id userName imagePath verified').catch(e => result.author)
+        post.author = authorData;
+        responseData.push(post);
+
     }
+
+    return res.status(200).send(responseData);
 }
 
 async function deletePost(req, res) {

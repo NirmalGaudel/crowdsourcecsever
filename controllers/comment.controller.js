@@ -1,6 +1,6 @@
 const { validationResult } = require("express-validator");
 const commentModel = require("../dataBase/models/comment.model");
-const mongoose = require("../dataBase/utils/dbConnect");
+const mongoose = require("mongoose");
 
 async function createComment(req, res) {
     const result = validationResult(req);
@@ -50,4 +50,10 @@ async function editComment(req, res) {
     }
 }
 
-module.exports = { createComment, deleteComment, editComment };
+async function getpostComments(req, res) {
+    const postId = req.params.postId || '';
+    const comments = await mongoose.models.Comments.find({ postId }).select("-__v").populate('author', ['_id', 'userName', "imagePath", "verified"]).catch(e => []);
+    res.send(comments)
+}
+
+module.exports = { createComment, deleteComment, editComment, getpostComments };

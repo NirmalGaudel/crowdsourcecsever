@@ -1,4 +1,4 @@
-const mongoose = require("../dataBase/utils/dbConnect");
+const mongoose = require("mongoose");
 
 async function likePost(req, res) {
     const postId = req.params.postId || null;
@@ -39,4 +39,28 @@ async function getPostLikes(req, res) {
     return res.json(postLikes);
 }
 
-module.exports = { likePost, unLikePost, getPostLikes };
+async function likeComment(req, res) {
+    const commentId = req.params.commentId || '';
+    const isDone = await mongoose.models.Comments.findByIdAndUpdate(commentId, { $addToSet: { likes: req.user.id } }).catch(e => false);
+    return res.status(isDone ? 200 : 500).json({
+        success: !!isDone,
+        likes: isDone.likes.length || 0
+    })
+}
+
+async function unLikeComment(req, res) {
+    const commentId = req.params.commentId || '';
+    const isDone = await mongoose.models.Comments.findByIdAndUpdate(commentId, { $pull: { likes: req.user.id } }).catch(e => false);
+    return res.status(isDone ? 200 : 500).json({
+        success: !!isDone,
+        likes: isDone.likes.length || 0
+    })
+}
+
+async function getCommentLikes(req, res) {
+    const commentId = req.params.commentId || '';
+    const commentLikes = await mongoose.models.Comments.findById(commentId).populate('likes', ['_id', 'userName', 'imagePath']).catch(e => []).then(d => d.likes);
+    return res.send(commentLikes);
+}
+
+module.exports = { likePost, unLikePost, getPostLikes, likeComment, unLikeComment, getCommentLikes };

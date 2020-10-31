@@ -1,8 +1,8 @@
 const { validationResult } = require("express-validator");
 const invalidTokenModel = require("../dataBase/models/expiredToken.model");
 const userModel = require("../dataBase/models/user.model");
-const mongoose = require("../dataBase/utils/dbConnect");
-const { hashPassword, verifyPassword, createToken } = require("../utils/authenticate");
+const mongoose = require("mongoose");
+const { hashPassword, verifyPassword, createToken } = require("../middleWare/authenticate");
 
 async function signUp(req, res) {
     const result = validationResult(req);
@@ -55,14 +55,24 @@ async function getUser(req, res) {
     const targetUser = req.params.targetUser;
     if (!targetUser) res.status(400).json({ message: "provide userName, email or userId" });
     const getTargetUser = async(tu) => {
-        if (mongoose.isValidObjectId(tu)) return await mongoose.models.Users.findById(tu).populate('posts', ['_id', 'postTitle', 'views', 'tags', 'createdAt', "verified"]).catch(e => null);
-        return await mongoose.models.Users.findOne({ $or: [{ email: tu }, { userName: tu }] }).populate('posts', ['_id', 'postTitle', 'views', 'tags', 'createdAt', "verified"]).catch(e => null);
+        if (mongoose.isValidObjectId(tu)) return await mongoose.models.Users.findById(tu).catch(e => null);
+        return await mongoose.models.Users.findOne({ $or: [{ email: tu }, { userName: tu }] }).catch(e => null);
     };
     let userData = await getTargetUser(targetUser);
     if (!userData) return res.json({ message: "User Not found" })
-    const { _id, userName, firstName, middleName, lastName, email, gender, imagePath, bio, posts } = userData;
+    const { _id, userName, firstName, middleName, lastName, email, gender, imagePath, bio, posts, verified, comments } = userData;
     const fullName = firstName + ((middleName) ? ` ${middleName} ` : ' ') + lastName;
-    return res.json({ _id, userName, fullName, imagePath, email, bio, posts, gender });
+    return res.json({ _id, userName, fullName, imagePath, verified, email, gender, bio, numberOfPosts: posts.length, numberOfComments: comments.length });
+}
+
+
+async function getUserPosts(req, res) {
+    const userId = req.params.userId || "";
+    console.log("object");
+    // const userPosts = [];
+    const postsData = await mongoose.models.Posts.find({ author: userId }).select("-reports -__v").catch(e => []);
+
+    res.send(postsData);
 }
 
 async function listUsers(req, res) {
@@ -78,17 +88,20 @@ async function listUsers(req, res) {
 }
 
 async function searchUsers(req, res) {
-    const searchString = req.params.search.toLowerCase();
+    const searchString = req.params.search;
     if (!searchString || (searchString.length <= 1)) return res.status(400).json({ message: "provide search with min length 2 " });
-    const users = await mongoose.models.Users.find({}).catch(_ => []);
-    const responseData = [];
-    users.forEach(user => {
-        const { userName, firstName, middleName, lastName, imagePath, email, posts } = user;
-        const postCount = posts.length;
-        const fullName = firstName + ((middleName) ? ` ${middleName} ` : ' ') + lastName;
-        if (fullName.toLowerCase().includes(searchString) || userName.toLowerCase().includes(searchString) || email.includes(searchString)) {
-            responseData.push({ userName, imagePath, fullName, email, postCount });
-        }
+    const responseData = []
+    const searchResult = await userModel.fuzzySearch(searchString).catch(e => []);
+    searchResult.forEach(result => {
+        const user = {};
+        user._id = result._id;
+        user.userName = result.userName;
+        user.fullName = result.firstName + (result.middleName ? (' ' + result.middleName + ' ') : ' ') + result.lastName;
+        user.imagePath = result.imagePath;
+        if (result.email) user.email = result.email;
+        user.verified = result.verified;
+        user.numberOfPosts = result.posts.length;
+        responseData.push(user);
     })
     return res.send(responseData);
 }
@@ -168,4 +181,4 @@ async function changePassword(req, res) {
 
 }
 
-module.exports = { signUp, authenticate, getUser, listUsers, searchUsers, validateToken, editUserDetails, deleteUser, logOut, changePassword };
+module.exports = { signUp, authenticate, getUser, getUserPosts, listUsers, searchUsers, validateToken, editUserDetails, deleteUser, logOut, changePassword };

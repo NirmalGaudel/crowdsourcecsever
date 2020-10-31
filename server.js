@@ -1,12 +1,12 @@
 const express = require("express");
-const path = require('path')
 const app = express();
 require("dotenv").config();
+const cors = require("cors");
 const mainRouter = require("./routers/mainRouter");
 const testRouter = require("./routers/testRouter");
-const cors = require("cors");
-const requireAuth = require("./utils/requireAuth");
+const requireAuth = require("./middleWare/requireAuth");
 const authRouter = require("./routers/authRouter");
+require("./dataBase/utils/dbConnect");
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({
@@ -14,9 +14,9 @@ app.use(express.urlencoded({
 }));
 app.use('/assets', express.static('./assets'));
 
-app.use("/api", requireAuth, mainRouter);
 app.use("/auth", authRouter)
-app.use("/test", requireAuth, testRouter);
+app.use("/api", requireAuth, mainRouter);
+app.use("/test", testRouter);
 app.get("/favicon.ico", (req, res) => {
     res.sendFile("./favicon.ico", {
         root: "./"

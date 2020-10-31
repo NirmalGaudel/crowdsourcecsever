@@ -2,6 +2,16 @@ const mongoose = require('mongoose');
 const { restart } = require('nodemon');
 const { post } = require('../schemas/user.schema');
 const userSchema = require('../schemas/user.schema');
+const mongooseFuzzySearching = require('mongoose-fuzzy-searching');
+
+userSchema.plugin(mongooseFuzzySearching, {
+    fields: [
+        { name: "firstName" },
+        { name: "middleName", minSize: 2, prefixOnly: true, wight: 2 },
+        { name: "lastName", minSize: 2, prefixOnly: true, weight: 3 },
+        { name: "userName", minSize: 2, weight: 6 }
+    ]
+});
 
 userSchema.virtual("fullName").get(function() {
     const midName = (this.middleName) ? this.middleName : ' ';

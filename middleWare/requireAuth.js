@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const mongoose = require('../dataBase/utils/dbConnect');
+const mongoose = require('mongoose');
 
 
 const requireAuth = async(req, res, next) => {
