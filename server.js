@@ -14,9 +14,10 @@ app.use(express.json());
 app.use(express.urlencoded({
     extended: false
 }));
-app.get('/', (req, res) => res.sendFile("./index.html", { root: './' }));
+// app.get('/', (req, res) => res.sendFile("./index.html", { root: './public' }));
 app.use('/assets', express.static('./assets'));
-app.use('/image', express.static('./uploads'))
+app.use('/image', express.static('./uploads'));
+app.use('/', express.static('./public'));
 app.use("/auth", authRouter)
 app.use("/api", requireAuth, mainRouter);
 app.use("/test", testRouter);
