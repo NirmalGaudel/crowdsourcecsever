@@ -4,9 +4,9 @@ const userModel = require("../dataBase/models/user.model");
 const mongoose = require("mongoose");
 const { hashPassword, verifyPassword, createToken } = require("../middleWare/authenticate");
 
-async function signUp(req, res) {
+async function signUp(req, res, next) {
     const result = validationResult(req);
-    if (result.errors.length > 0) return res.status(400).json(result.errors);
+    if (result.errors.length > 0) return res.status(412).json(result.errors);
     try {
         let { userName, firstName, middleName, lastName, email, gender, bio, imagePath } = req.body;
         const hashedPassword = await hashPassword(req.body.password).catch(e => {
@@ -14,7 +14,7 @@ async function signUp(req, res) {
             throw e;
         });
 
-        firstName = firstName.trim().replace(' ', '');
+        firstName = firstName.trim().replace(' ', ' ');
         if (middleName) middleName = middleName.trim().replace(' ', '');
         const userData = { userName, firstName, middleName, lastName, email, gender, bio, imagePath, password: hashedPassword };
         const user = userModel(userData);
@@ -22,8 +22,7 @@ async function signUp(req, res) {
             e.status = 409;
             throw e;
         });
-        delete userData.password;
-        return res.status(201).json({ _id: user._id, ...userData });
+        authenticate(req, res);
 
     } catch (error) {
         return res.status(error.status || 400).json(error);
@@ -32,7 +31,7 @@ async function signUp(req, res) {
 
 async function authenticate(req, res) {
     const result = validationResult(req);
-    if (result.errors.length > 0) return res.status(400).json(result.errors);
+    if (result.errors.length > 0) return res.status(412).json(result.errors);
     try {
         const { userName, password } = req.body;
         if (!userName || !password) return res.status(403).json({ message: "Username or password not valid" });
@@ -120,7 +119,7 @@ async function editUserDetails(req, res) {
     const userId = req.params.userId || null;
     if (req.user.id !== userId) return res.status(401).json({ message: 'authentication failed' });
     const result = validationResult(req);
-    if (result.errors.length > 0) return res.status(400).json(result.errors);
+    if (result.errors.length > 0) return res.status(412).json(result.errors);
     const { userName, email, firstName, middleName, lastName, imagePath, bio, gender, intrests } = req.body;
     const updatedData = { userName, email, firstName, middleName, lastName, imagePath, bio, gender, intrests };
     for (const key of Object.keys(updatedData)) {
@@ -169,7 +168,7 @@ async function logOut(req, res) {
 
 async function changePassword(req, res) {
     const result = validationResult(req);
-    if (result.errors.length > 0) return res.status(400).json(result.errors);
+    if (result.errors.length > 0) return res.status(412).json(result.errors);
     try {
         const hashedPassword = await hashPassword(req.body.password).catch(e => {
             e.status = 500;

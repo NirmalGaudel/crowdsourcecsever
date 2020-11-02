@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 
 async function createComment(req, res) {
     const result = validationResult(req);
-    if (result.errors.length > 0) return res.status(400).json(result.errors);
+    if (result.errors.length > 0) return res.status(412).json(result.errors);
     const postId = req.params.postId;
     if (!mongoose.isValidObjectId(postId)) return res.status(400).json({ msg: "invalid postId" });
     const postCount = await mongoose.models.Posts.countDocuments({ _id: postId }).catch(e => 0);

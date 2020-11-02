@@ -1,9 +1,11 @@
 const mainRouter = require('express').Router();
+const fs = require('fs');
 const { createComment, deleteComment, editComment, getpostComments, getComment } = require('../controllers/comment.controller');
 const { likePost, getPostLikes, unLikePost, likeComment, unLikeComment, getCommentLikes } = require('../controllers/like.controller');
 const { createPost, listPosts, searchPost, getPost, deletePost } = require('../controllers/post.controller');
 const { getPopularTags, searchTag, getPostsByTag } = require('../controllers/tag.controller');
 const { getUser, listUsers, searchUsers, editUserDetails, deleteUser, getUserPosts } = require('../controllers/user.controller');
+const { singleImageStore } = require('../middleWare/fileStorage');
 const { manageTagsForCreatePost, manageTagsForDeletePost } = require('../middleWare/tagMiddleWares');
 const { ValidateCreatePost, ValidateComment, ValidateUpdateUser } = require('../middleWare/validators');
 
@@ -12,6 +14,17 @@ mainRouter.get('/', (req, res, next) => {
     return res.status(200).json({...response });
 });
 
+//ImageUpload
+mainRouter.post('/uploadImage', singleImageStore("imagePath"), (req, res) => {
+    return res.status(req.files ? 200 : 500).send(req.files || { message: "Internal server error" });
+});
+// mainRouter.get('/image/:imageName', (req, res) => {
+//     const imagePath = (req.params.imageName || 'NotExist.jpg')
+//     fs.access("../uploads/" + imagePath, fs.F_OK, (err) => {
+//         if (err) return res.status(404).send({ imagePath, err });
+//     });
+//     return res.status(200).sendFile(imagePath, { root: '../uploads' });
+// })
 
 //user
 

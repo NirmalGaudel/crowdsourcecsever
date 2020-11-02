@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 async function manageTagsForCreatePost(req, res, next) {
     const result = validationResult(req);
-    if (result.errors.length > 0) return res.status(400).json(result.errors);
+    if (result.errors.length > 0) return res.status(412).json(result.errors);
     const tags = req.body.tags;
     console.log(tags);
     const options = { upsert: true, new: true, setDefaultsOnInsert: true };

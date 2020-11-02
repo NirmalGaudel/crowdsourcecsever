@@ -20,7 +20,6 @@ const ValidateUserSignUP = [
     .normalizeEmail().isLength({ max: 128 }).withMessage("email must have less than 128 characters")
     .custom(email => {
         return mongoose.models.Users.findOne({ email }).then((err, user) => {
-            // if (err) return Promise.reject('E-mail already in use');
             if (err || user) {
                 return Promise.reject('E-mail already in use');
             }
@@ -46,7 +45,20 @@ const ValidateUserSignUP = [
     .custom((password, { req }) => (password === req.body.confirmPassword))
     .withMessage("confirmPassword don't match with password"),
     body('gender').optional().isIn(['M', 'F', 'O']).withMessage("gender must be one of ['M','F','O']"),
-    body('bio').optional().isLength({ max: 200 }).withMessage("bio must have less than 200 characters")
+    body('bio').optional().isLength({ max: 200 }).withMessage("bio must have less than 200 characters"),
+    body('imagePath').notEmpty().withMessage('imagePath is required').custom(imagePath => {
+        try {
+            const ImageName = imagePath.split('.')[0];
+            const ImageNumber = parseInt(ImageName.slice(11));
+            if (ImageNumber > 0 && ImageNumber < 51) {
+                return true;
+            } else {
+                throw new Error("Invalid ImagePath")
+            }
+        } catch (error) {
+            Promise.reject("Invalid imagePath");
+        }
+    })
 ]
 
 const ValidateUserSignIn = [

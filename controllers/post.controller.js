@@ -16,7 +16,7 @@ async function getPostById(postId) {
 
 async function createPost(req, res) {
     const result = validationResult(req);
-    if (result.errors.length > 0) return res.status(400).json(result.errors);
+    if (result.errors.length > 0) return res.status(412).json(result.errors);
     try {
         const { postTitle, postContent, postImagesPath, tags } = req.body;
         const newPost = new postModel({ author: req.user.id, postTitle, postContent, postImagesPath, tags });
