@@ -23,10 +23,12 @@ app.use("/api", requireAuth, mainRouter);
 app.use("/test", testRouter);
 app.get("/favicon.ico", (req, res) => res.sendFile("./favicon.ico", { root: "./" }));
 
+
 app.use((req, res, next) => {
     const error = new Error('Not found');
     error.status = 404;
-    next(error);
+    res.redirect('/')
+        // next(error);
 });
 
 app.use((error, req, res, next) => {
