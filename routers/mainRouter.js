@@ -2,12 +2,12 @@ const mainRouter = require('express').Router();
 const fs = require('fs');
 const { createComment, deleteComment, editComment, getpostComments, getComment } = require('../controllers/comment.controller');
 const { likePost, getPostLikes, unLikePost, likeComment, unLikeComment, getCommentLikes } = require('../controllers/like.controller');
-const { createPost, listPosts, searchPost, getPost, deletePost } = require('../controllers/post.controller');
-const { getPopularTags, searchTag, getPostsByTag } = require('../controllers/tag.controller');
+const { createPost, listPosts, searchPost, getPost, deletePost, updatePost } = require('../controllers/post.controller');
+const { getPopularTags, searchTag, getPostsByTag, createTag } = require('../controllers/tag.controller');
 const { getUser, listUsers, searchUsers, editUserDetails, deleteUser, getUserPosts } = require('../controllers/user.controller');
 const { singleImageStore } = require('../middleWare/fileStorage');
-const { manageTagsForCreatePost, manageTagsForDeletePost } = require('../middleWare/tagMiddleWares');
-const { ValidateCreatePost, ValidateComment, ValidateUpdateUser } = require('../middleWare/validators');
+const { manageTagsForCreatePost, manageTagsForDeletePost, manageTagsForUpdatePost } = require('../middleWare/tagMiddleWares');
+const { ValidateCreatePost, ValidateComment, ValidateUpdateUser, ValidateUpdatePost } = require('../middleWare/validators');
 
 mainRouter.get('/', (req, res, next) => {
     const response = { message: "This is Test API" };
@@ -18,15 +18,7 @@ mainRouter.get('/', (req, res, next) => {
 mainRouter.post('/uploadImage', singleImageStore("imagePath"), (req, res) => {
     return res.status(req.files ? 200 : 500).send(req.files || { message: "Internal server error" });
 });
-// mainRouter.get('/image/:imageName', (req, res) => {
-//     const imagePath = (req.params.imageName || 'NotExist.jpg')
-//     fs.access("../uploads/" + imagePath, fs.F_OK, (err) => {
-//         if (err) return res.status(404).send({ imagePath, err });
-//     });
-//     return res.status(200).sendFile(imagePath, { root: '../uploads' });
-// })
 
-//user
 
 mainRouter.get('/users', listUsers);
 mainRouter.get('/user/:targetUser', getUser);
@@ -42,6 +34,7 @@ mainRouter.post('/posts', [ValidateCreatePost, manageTagsForCreatePost], createP
 mainRouter.get('/posts', listPosts);
 mainRouter.get('/post/:postId', getPost);
 mainRouter.get('/posts/:search', searchPost);
+mainRouter.put('/post/:postId', [ValidateUpdatePost, manageTagsForUpdatePost], updatePost);
 mainRouter.delete('/post/:postId', manageTagsForDeletePost, deletePost)
 
 //comment

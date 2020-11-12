@@ -2,9 +2,11 @@ const mongoose = require("mongoose");
 const tagModel = require("../dataBase/models/tag.model");
 const tagSchema = require("../dataBase/schemas/tag.schema");
 
-async function getPopularTags(req, res) {
 
-    await mongoose.models.Tags.find({}, 'tag score _id').sort({ score: -1 }).limit(10).catch(e => {
+
+async function getPopularTags(req, res) {
+    const limit = parseInt(req.query.limit) || 10
+    await mongoose.models.Tags.find({}, 'tag score _id').sort({ score: -1 }).limit(limit).catch(e => {
         return res.status(500).send(e);
     }).then(async d => {
         const count = await mongoose.models.Tags.countDocuments().catch(e => 0);
@@ -22,17 +24,36 @@ async function createTag(req, res) {
 
 async function searchTag(req, res) {
     const searchString = req.params.searchString || '';
+    const query = { tag: { $regex: new RegExp(searchString), $options: 'i' } };
+    const options = {
+        page: req.query.page || 1,
+        limit: req.query.limit || 10,
+        sort: '-score',
+        select: 'tag _id score'
+    };
+
     const regexp = new RegExp(searchString, 'i');
     if (searchString.length < 2) return res.status(400).json({ message: "provide a searchString of at least 2 characters" });
-    const searchResult = await mongoose.models.Tags.find({ tag: { $regex: new RegExp(searchString), $options: 'i' } }).sort({ score: -1 }).catch(e => []);
+    const searchResult = await mongoose.models.Tags.paginate(query, options).catch(e => []);
     return res.send(searchResult);
 }
 
 async function getPostsByTag(req, res) {
+    const options = {
+        page: req.query.page || 1,
+        limit: req.query.limit || 5,
+        populate: {
+            path: 'author',
+            select: "_id userName imagePath verified"
+        },
+        select: '_id author views likes comments postTitle postContent tags postDesciption',
+        sort: '-views'
+
+    };
     const tag = req.params.tag || '';
     if (tag.length < 2) return res.status(400).json({ message: 'invalid tag' });
-    const posts = await mongoose.models.Posts.find({ tags: { $in: [tag] } }).populate('author', '_id userName verified imagePath').select("-__v -reports").catch(e => []);
-
+    const query = { tags: { $in: [tag] } }
+    const posts = await mongoose.models.Posts.paginate(query, options).catch(e => []);
     return res.send(posts);
 }
 

@@ -1,13 +1,18 @@
 const mongoose = require("mongoose");
 const mongooseFuzzySearching = require("mongoose-fuzzy-searching");
-const postSchema = require("../schemas/post.schema")
+const mongoosePaginate = require("mongoose-paginate-v2");
+const postSchema = require("../schemas/post.schema");
+
+
 
 postSchema.plugin(mongooseFuzzySearching, {
     fields: [
         { name: "postTitle", minSize: 2, weight: 6 },
         { name: "postContent", minSize: 2, weight: 3 }
     ]
-})
+});
+
+postSchema.plugin(mongoosePaginate);
 
 postSchema.path('author').validate(async(author) => {
     const UserIDCount = await mongoose.models.Users.countDocuments({ _id: author }).catch(e => { return 0; });
@@ -51,6 +56,10 @@ postSchema.methods.deletePost = async function() {
         });
         //delete from author's posts
         await mongoose.models.Users.findByIdAndUpdate(this.author, { $pull: { posts: this._id } });
+
+        //subtract 1 score from each tag
+        await mongoose.models.Tags.updateMany({ tag: { $in: this.tags } }, { $inc: { score: -1 } });
+
         //delete actual post
         this.delete();
     } catch (error) {

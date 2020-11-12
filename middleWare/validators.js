@@ -67,11 +67,40 @@ const ValidateUserSignIn = [
 ]
 
 const ValidateCreatePost = [
-    body('postTitle').optional().isLength({ max: 100 }).withMessage("postTitle must have less than 100 characters"),
+    body('postTitle').notEmpty().withMessage("postTitle is required")
+    .isLength({ min: 3 }).withMessage('postTitle must have more than 3 characters')
+    .isLength({ max: 100 }).withMessage("postTitle must have less than 100 characters"),
     body('postContent').notEmpty().withMessage('postContent is required')
-    .isLength({ min: 10 }).withMessage('postContent must have more than 10 characters')
+    .isLength({ min: 20 }).withMessage('postContent must have more than 20 characters')
     .isLength({ max: 2000 }).withMessage('postContent must have less than 2000 characters'),
+    body('postDescription').notEmpty().withMessage('postDescription is required')
+    .isLength({ min: 20 }).withMessage('postDescription must have more than 20 characters')
+    .isLength({ max: 200 }).withMessage('postDescription must have less than 200 characters'),
     body('tags').notEmpty().withMessage('post requires tags').toArray().isArray({ min: 5, max: 10 }).withMessage('tags must be an array of min length 5 and max length 10')
+    .custom(tags => {
+        for (let i = 0; i < tags.length; i++) {
+            const tag = tags[i];
+            const taglength = tag.length;
+            if (taglength < 2) throw new Error("a tag must have more than 2 characters" + `, but length of \'${tags[i]}\' is ${taglength} characters`);
+            if (taglength > 32) throw new Error("a tag must have less than 32 characters" + `, but length of \'${tags[i]}\' is ${taglength} characters`);
+            const isInArray = (tags.lastIndexOf(tag) != i);
+            if (isInArray) throw new Error(`duplicate values are not allowed`);
+        }
+        return true;
+    })
+]
+
+const ValidateUpdatePost = [
+    body('postTitle').optional()
+    .isLength({ min: 3 }).withMessage('postTitle must have more than 3 characters')
+    .isLength({ max: 100 }).withMessage("postTitle must have less than 100 characters"),
+    body('postContent').optional()
+    .isLength({ min: 20 }).withMessage('postContent must have more than 20 characters')
+    .isLength({ max: 2000 }).withMessage('postContent must have less than 2000 characters'),
+    body('postDescription').optional()
+    .isLength({ min: 20 }).withMessage('postDescription must have more than 20 characters')
+    .isLength({ max: 200 }).withMessage('postDescription must have less than 200 characters'),
+    body('tags').optional().toArray().isArray({ min: 5, max: 10 }).withMessage('tags must be an array of min length 5 and max length 10')
     .custom(tags => {
         for (let i = 0; i < tags.length; i++) {
             const tag = tags[i];
@@ -146,4 +175,4 @@ const ValidatePasswordChange = [
 ]
 
 
-module.exports = { ValidateUserSignUP, ValidateUpdateUser, ValidateUserSignIn, ValidateCreatePost, ValidateComment, ValidatePasswordChange };
+module.exports = { ValidateUserSignUP, ValidateUpdateUser, ValidateUserSignIn, ValidateCreatePost, ValidateUpdatePost, ValidateComment, ValidatePasswordChange };

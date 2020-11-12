@@ -1,3 +1,4 @@
+const { text } = require('express');
 const mongoose = require('mongoose');
 const postSchema = new mongoose.Schema({
     author: {
@@ -29,20 +30,26 @@ const postSchema = new mongoose.Schema({
         required: false,
         maxlength: [100, 'Title must be shorter than 100 characters'],
     },
+    postDescription: {
+        type: String,
+        required: [true, "the post description is required  "],
+        minlength: [20, 'postDescription must be longer than 20 characters'],
+        maxlength: [200, 'postDescription must be shorter than 200 characters']
+    },
     postContent: {
         type: String,
         required: [true, 'postContent is required for a post'],
-        minlength: [10, 'Post must be longer than 10 characters'],
+        minlength: [20, 'Post must be longer than 20 characters'],
         maxlength: [2000, 'Post must be shorter than 2000 characters']
     },
     postLinks: {
         type: [String],
         default: []
     },
-    postImagesPath: {
-        type: [String],
-        required: [true, 'Post requires postImagesPath'],
-        default: []
+    postCoverURL: {
+        type: String,
+        required: [true, 'Post requires postCoverURL'],
+        default: ''
     },
     tags: {
         type: [String],

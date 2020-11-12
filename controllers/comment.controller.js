@@ -60,8 +60,20 @@ async function editComment(req, res) {
 }
 
 async function getpostComments(req, res) {
+
     const postId = req.params.postId || '';
-    const comments = await mongoose.models.Comments.find({ postId }).select("-__v").populate('author', ['_id', 'userName', "imagePath", "verified"]).catch(e => []);
+    const query = { postId };
+    const options = {
+        page: req.query.page || 1,
+        limit: req.query.limit || 10,
+        populate: {
+            path: 'author',
+            select: '_id userName imagePath verified'
+        },
+        select: "-__v",
+        sort: "-createdAt"
+    }
+    const comments = await mongoose.models.Comments.paginate(query, options).catch(e => []);
     res.send(comments)
 }
 

@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 const commentSchema = require("../schemas/comment.schema");
+const mongoosePaginate = require("mongoose-paginate-v2");
 
+
+commentSchema.plugin(mongoosePaginate);
 
 commentSchema.path('author').validate(async(author) => {
     const UserIDCount = await mongoose.models.Users.countDocuments({ _id: author }).catch(e => { return 0; });
