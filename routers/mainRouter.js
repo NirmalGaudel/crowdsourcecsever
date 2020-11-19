@@ -19,6 +19,7 @@ mainRouter.post('/uploadImage', singleImageStore("imagePath"), (req, res) => {
     return res.status(req.files ? 200 : 500).send(req.files || { message: "Internal server error" });
 });
 
+//user
 
 mainRouter.get('/users', listUsers);
 mainRouter.get('/user/:targetUser', getUser);

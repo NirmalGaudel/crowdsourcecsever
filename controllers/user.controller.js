@@ -4,6 +4,7 @@ const userModel = require("../dataBase/models/user.model");
 const mongoose = require("mongoose");
 const { hashPassword, verifyPassword, createToken } = require("../middleWare/authenticate");
 
+
 async function signUp(req, res, next) {
     const result = validationResult(req);
     if (result.errors.length > 0) return res.status(412).json(result.errors);
@@ -67,10 +68,32 @@ async function getUser(req, res) {
 
 async function getUserPosts(req, res) {
     const userId = req.params.userId || "";
-    console.log("object");
-    // const userPosts = [];
-    const postsData = await mongoose.models.Posts.find({ author: userId }).select("-reports -__v").catch(e => []);
-
+    const options = {
+        page: req.query.page || 1,
+        limit: req.query.limit || 5,
+        populate: {
+            path: 'author',
+            select: "_id userName imagePath verified"
+        },
+        select: '_id author views likes comments postTitle postContent tags postDesciption',
+        sort: '-views'
+    };
+    const query = { author: userId };
+    const cb = (paginationResult) => {
+        const docs = paginationResult.docs;
+        delete paginationResult.docs;
+        const newDocs = [];
+        docs.forEach(post => {
+            const { likes, comments } = post;
+            likes = likes.length;
+            comments = comments.length;
+            post = {...post, likes, comments };
+            newDocs.push(post);
+        });
+        paginationResult.docs = newDocs;
+        return paginationResult;
+    };
+    const postsData = await mongoose.models.Posts.paginate(query, options).then(cb).catch(e => []);
     res.send(postsData);
 }
 

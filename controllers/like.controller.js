@@ -33,10 +33,31 @@ async function unLikePost(req, res) {
 }
 
 async function getPostLikes(req, res) {
+    let page = Math.abs(Math.floor(parseInt(req.query.page || 1)));
+    const limit = Math.abs(Math.floor(parseInt(req.query.limit || 10)));
     const postId = req.params.postId || null;
     if (!postId) return res.status(400).json({ success: false, message: "postId must be provided" });
-    const postLikes = await mongoose.models.Posts.findOne({ _id: postId }).populate('likes', ['_id', 'userName', 'imagePath']).catch(_ => []).then(d => { return d.likes });
-    return res.json(postLikes);
+    const postLikes = await mongoose.models.Posts.findOne({ _id: postId }).populate('likes', ['_id', 'userName', 'imagePath']).catch(_ => {
+        return {
+            likes: []
+        }
+    }).then(d => { return d.likes });
+    if (page > (Math.floor(postLikes.length / limit) + 1)) page = Math.floor(postLikes.length / limit) + 1;
+    console.log(postLikes);
+    const response = {
+        docs: postLikes.slice((page - 1) * limit, (page * limit)),
+        totalDocs: postLikes.length,
+        limit,
+        totalPages: Math.floor(postLikes.length / limit) + 1,
+        page,
+        pagingCounter: ((page - 1) * limit) + 1,
+        hasPrevPage: !!(page > 1),
+        hasNextPage: page <= (Math.floor(postLikes.length / limit)),
+        prevPage: (page > 1) ? page - 1 : null,
+        nextPage: (page <= (Math.floor(postLikes.length / limit))) ? page + 1 : null
+
+    }
+    return res.json(response);
 }
 
 async function likeComment(req, res) {

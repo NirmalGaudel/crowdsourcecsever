@@ -5,14 +5,16 @@ const tagSchema = require("../dataBase/schemas/tag.schema");
 
 
 async function getPopularTags(req, res) {
-    const limit = parseInt(req.query.limit) || 10
-    await mongoose.models.Tags.find({}, 'tag score _id').sort({ score: -1 }).limit(limit).catch(e => {
-        return res.status(500).send(e);
-    }).then(async d => {
-        const count = await mongoose.models.Tags.countDocuments().catch(e => 0);
-        res.status(200).send({ count, data: d });
-
-    })
+    const options = {
+        page: req.query.page || 1,
+        limit: req.query.limit || 10,
+        sort: '-score',
+        select: 'tag _id score'
+    };
+    const result = await mongoose.models.Tags.paginate({}, options).catch(e => {
+        return res.status(500).json({ message: "InterNal Server Error" })
+    });
+    return res.send(result);
 }
 
 async function createTag(req, res) {
@@ -34,7 +36,9 @@ async function searchTag(req, res) {
 
     const regexp = new RegExp(searchString, 'i');
     if (searchString.length < 2) return res.status(400).json({ message: "provide a searchString of at least 2 characters" });
-    const searchResult = await mongoose.models.Tags.paginate(query, options).catch(e => []);
+    const searchResult = await mongoose.models.Tags.paginate(query, options).catch(e => {
+        return res.status(500).json({ message: "InterNal Server Error" })
+    });
     return res.send(searchResult);
 }
 

@@ -5,7 +5,7 @@ const upload = multer({
         filename: (req, file, cb) => {
 
             let extension = file.mimetype.split("/")[1];
-            if (extension = 'svg+xml') extension = 'svg';
+            if (extension == 'svg+xml') { extension = 'svg' };
             cb(null, req.user.id + '-' + Date.now() + '.' + extension);
         }
     }),

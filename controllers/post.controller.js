@@ -55,15 +55,16 @@ async function listPosts(req, res) {
             path: 'author',
             select: "_id userName imagePath verified"
         },
-        select: '_id author views likes comments postTitle postContent tags postDesciption',
+        select: '_id author views likes comments postTitle tags postDescription postCoverURL createdAt',
         sort: '-views'
 
     };
-    let postsList = await mongoose.models.Posts.paginate({}, options).catch(_ => [])
+    let postsList = await mongoose.models.Posts.paginate({}, options).catch(_ => null)
         .then(posts => {
             return posts;
         })
-    return res.status(postsList.length ? 200 : 500).json(postsList || { message: 'Internal database error' });
+
+    return res.status(postsList ? 200 : 500).json(postsList || { message: 'Internal database error' });
 
 }
 

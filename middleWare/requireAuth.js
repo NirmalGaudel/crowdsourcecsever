@@ -16,8 +16,13 @@ const requireAuth = async(req, res, next) => {
                 algorithm: 'HS256',
                 expiresIn: process.env.JWT_EXPIRE
             });
-            req.user = decodedToken;
-            next();
+            mongoose.models.Users.countDocuments({ _id: decodedToken.id }).then(UserCount => {
+                if (!UserCount) return res.status(401).json({ message: "Token resolves to invalid user" });
+                req.user = decodedToken;
+                next();
+            }).catch(e => {
+                throw new Error("Token resolves to invalid user");
+            });
 
         } catch (error) {
             return res.status(401).json({
