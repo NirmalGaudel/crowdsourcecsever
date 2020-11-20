@@ -48,7 +48,7 @@ const postSchema = new mongoose.Schema({
     },
     postCoverURL: {
         type: String,
-        required: [true, 'Post requires postCoverURL'],
+        required: [false, 'Post requires postCoverURL'],
         default: ''
     },
     tags: {

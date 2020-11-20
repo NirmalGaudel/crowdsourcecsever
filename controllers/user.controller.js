@@ -59,7 +59,7 @@ async function getUser(req, res) {
         return await mongoose.models.Users.findOne({ $or: [{ email: tu }, { userName: tu }] }).catch(e => null);
     };
     let userData = await getTargetUser(targetUser);
-    if (!userData) return res.json({ message: "User Not found" })
+    if (!userData) return res.status(404).json({ message: "User Not found" })
     const { _id, userName, firstName, middleName, lastName, email, gender, imagePath, bio, posts, verified, comments } = userData;
     const fullName = firstName + ((middleName) ? ` ${middleName} ` : ' ') + lastName;
     return res.json({ _id, userName, fullName, imagePath, verified, email, gender, bio, numberOfPosts: posts.length, numberOfComments: comments.length });
@@ -67,6 +67,7 @@ async function getUser(req, res) {
 
 
 async function getUserPosts(req, res) {
+
     const userId = req.params.userId || "";
     const options = {
         page: req.query.page || 1,
@@ -75,25 +76,30 @@ async function getUserPosts(req, res) {
             path: 'author',
             select: "_id userName imagePath verified"
         },
-        select: '_id author views likes comments postTitle postContent tags postDesciption',
+        select: '_id author views likes comments postTitle tags postDescription postCoverURL createdAt',
         sort: '-views'
     };
     const query = { author: userId };
     const cb = (paginationResult) => {
         const docs = paginationResult.docs;
         delete paginationResult.docs;
+
         const newDocs = [];
         docs.forEach(post => {
-            const { likes, comments } = post;
+            let { likes, comments } = post;
             likes = likes.length;
             comments = comments.length;
-            post = {...post, likes, comments };
+            console.log({...post });
+            delete post._doc.likes;
+            delete post._doc.comments;
+            post._doc.likes = likes;
+            post._doc.comments = comments;
             newDocs.push(post);
         });
         paginationResult.docs = newDocs;
         return paginationResult;
     };
-    const postsData = await mongoose.models.Posts.paginate(query, options).then(cb).catch(e => []);
+    const postsData = await mongoose.models.Posts.paginate(query, options).catch(e => []);
     res.send(postsData);
 }
 

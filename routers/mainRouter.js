@@ -3,7 +3,7 @@ const fs = require('fs');
 const { createComment, deleteComment, editComment, getpostComments, getComment } = require('../controllers/comment.controller');
 const { likePost, getPostLikes, unLikePost, likeComment, unLikeComment, getCommentLikes } = require('../controllers/like.controller');
 const { createPost, listPosts, searchPost, getPost, deletePost, updatePost } = require('../controllers/post.controller');
-const { getPopularTags, searchTag, getPostsByTag, createTag } = require('../controllers/tag.controller');
+const { getPopularTags, searchTag, getPostsByTag, getTag } = require('../controllers/tag.controller');
 const { getUser, listUsers, searchUsers, editUserDetails, deleteUser, getUserPosts } = require('../controllers/user.controller');
 const { singleImageStore } = require('../middleWare/fileStorage');
 const { manageTagsForCreatePost, manageTagsForDeletePost, manageTagsForUpdatePost } = require('../middleWare/tagMiddleWares');
@@ -59,7 +59,8 @@ mainRouter.get("/comment/:commentId/likes", getCommentLikes)
 //tags
 
 mainRouter.get("/tags", getPopularTags);
+mainRouter.get("/tag/:tag", getTag);
+mainRouter.get('/tag/:tag/posts', getPostsByTag);
 mainRouter.get("/tags/:searchString", searchTag);
-mainRouter.get('/tag/:tag', getPostsByTag);
 
 module.exports = mainRouter;

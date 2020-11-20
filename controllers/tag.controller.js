@@ -50,7 +50,7 @@ async function getPostsByTag(req, res) {
             path: 'author',
             select: "_id userName imagePath verified"
         },
-        select: '_id author views likes comments postTitle postContent tags postDesciption',
+        select: '_id author views likes comments postTitle tags postDescription postCoverURL createdAt',
         sort: '-views'
 
     };
@@ -61,6 +61,12 @@ async function getPostsByTag(req, res) {
     return res.send(posts);
 }
 
+async function getTag(req, res) {
+    const tag = req.params.tag || '';
 
+    const tagInfo = await mongoose.models.Tags.findOne({ tag }).catch(e => null);
+    if (!tagInfo) return res.status(404).json({ message: "Tag Not Found" });
+    return res.status(200).json(tagInfo);
+}
 
-module.exports = { createTag, getPopularTags, searchTag, getPostsByTag }
+module.exports = { getTag, createTag, getPopularTags, searchTag, getPostsByTag }
