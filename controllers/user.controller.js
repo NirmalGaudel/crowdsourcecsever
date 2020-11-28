@@ -80,26 +80,19 @@ async function getUserPosts(req, res) {
         sort: '-views'
     };
     const query = { author: userId };
-    const cb = (paginationResult) => {
-        const docs = paginationResult.docs;
-        delete paginationResult.docs;
-
-        const newDocs = [];
-        docs.forEach(post => {
-            let { likes, comments } = post;
-            likes = likes.length;
-            comments = comments.length;
-            console.log({...post });
-            delete post._doc.likes;
-            delete post._doc.comments;
-            post._doc.likes = likes;
-            post._doc.comments = comments;
-            newDocs.push(post);
-        });
-        paginationResult.docs = newDocs;
+    const formatPosts = (paginationResult) => {
+        for (let i = 0; i < paginationResult.docs.length; i++) {
+            const { likes, comments } = paginationResult.docs[i]._doc;
+            paginationResult.docs[i]._doc.numberOfLikes = likes.length;
+            paginationResult.docs[i]._doc.numberOfComments = comments.length;
+            paginationResult.docs[i]._doc.isLiked = likes.includes(req.user.id);
+            delete paginationResult.docs[i]._doc.likes;
+            delete paginationResult.docs[i]._doc.comments;
+        }
         return paginationResult;
     };
-    const postsData = await mongoose.models.Posts.paginate(query, options).catch(e => []);
+    const postsData = await mongoose.models.Posts.paginate(query, options).then(formatPosts).catch(e => []);
+
     res.send(postsData);
 }
 
@@ -116,6 +109,8 @@ async function listUsers(req, res) {
 }
 
 async function searchUsers(req, res) {
+    let page = Math.abs(Math.floor(parseInt(req.query.page || 1)));
+    const limit = Math.abs(Math.floor(parseInt(req.query.limit || 10)));
     const searchString = req.params.search;
     if (!searchString || (searchString.length <= 1)) return res.status(400).json({ message: "provide search with min length 2 " });
     const responseData = []
@@ -129,9 +124,26 @@ async function searchUsers(req, res) {
         if (result.email) user.email = result.email;
         user.verified = result.verified;
         user.numberOfPosts = result.posts.length;
+        user.numberOfComments = result.comments.length;
         responseData.push(user);
     })
-    return res.send(responseData);
+    const totalPages = (Math.floor(responseData.length / limit) == (responseData.length / limit)) ? Math.floor(responseData.length / limit) : Math.floor(responseData.length / limit) + 1;
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    const response = {
+        docs: responseData.slice((page - 1) * limit, (page * limit)),
+        totalDocs: responseData.length,
+        limit,
+        totalPages: Math.floor(responseData.length / limit) + 1,
+        page,
+        pagingCounter: ((page - 1) * limit) + 1,
+        hasPrevPage: !!(page > 1),
+        hasNextPage: page <= (Math.floor(responseData.length / limit)),
+        prevPage: (page > 1) ? page - 1 : null,
+        nextPage: (page < totalPages) ? page + 1 : null
+
+    }
+    return res.send(response);
 }
 
 async function validateToken(req, res) {

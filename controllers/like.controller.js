@@ -42,8 +42,10 @@ async function getPostLikes(req, res) {
             likes: []
         }
     }).then(d => { return d.likes });
-    if (page > (Math.floor(postLikes.length / limit) + 1)) page = Math.floor(postLikes.length / limit) + 1;
-    console.log(postLikes);
+    const totalPages = (Math.floor(postLikes.length / limit) == (postLikes.length / limit)) ? Math.floor(postLikes.length / limit) : Math.floor(responseData.length / limit) + 1;
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+
     const response = {
         docs: postLikes.slice((page - 1) * limit, (page * limit)),
         totalDocs: postLikes.length,

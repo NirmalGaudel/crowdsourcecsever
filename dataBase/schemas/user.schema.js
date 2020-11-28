@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
-        enum: ['M', 'F', 'O']
+        enum: ['M', 'F', 'O'],
     },
     verified: {
         type: Boolean,

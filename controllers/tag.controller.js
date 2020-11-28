@@ -34,7 +34,6 @@ async function searchTag(req, res) {
         select: 'tag _id score'
     };
 
-    const regexp = new RegExp(searchString, 'i');
     if (searchString.length < 2) return res.status(400).json({ message: "provide a searchString of at least 2 characters" });
     const searchResult = await mongoose.models.Tags.paginate(query, options).catch(e => {
         return res.status(500).json({ message: "InterNal Server Error" })
@@ -43,6 +42,17 @@ async function searchTag(req, res) {
 }
 
 async function getPostsByTag(req, res) {
+    const formatPosts = (paginationResult) => {
+        for (let i = 0; i < paginationResult.docs.length; i++) {
+            const { likes, comments } = paginationResult.docs[i]._doc;
+            paginationResult.docs[i]._doc.numberOfLikes = likes.length;
+            paginationResult.docs[i]._doc.numberOfComments = comments.length;
+            paginationResult.docs[i]._doc.isLiked = likes.includes(req.user.id);
+            delete paginationResult.docs[i]._doc.likes;
+            delete paginationResult.docs[i]._doc.comments;
+        }
+        return paginationResult;
+    };
     const options = {
         page: req.query.page || 1,
         limit: req.query.limit || 5,
@@ -57,7 +67,7 @@ async function getPostsByTag(req, res) {
     const tag = req.params.tag || '';
     if (tag.length < 2) return res.status(400).json({ message: 'invalid tag' });
     const query = { tags: { $in: [tag] } }
-    const posts = await mongoose.models.Posts.paginate(query, options).catch(e => []);
+    const posts = await mongoose.models.Posts.paginate(query, options).then(formatPosts).catch(e => []);
     return res.send(posts);
 }
 
