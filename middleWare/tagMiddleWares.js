@@ -25,7 +25,6 @@ async function manageTagsForUpdatePost(req, res, next) {
         const postData = await mongoose.models.Posts.findById(postId).select("author tags").catch(e => null); //also checks valid postId
         if (!postData) return res.status(400).json({ message: "invalid postId" }); //if postId is invalid
 
-        console.log({ userId: req.user.id, postAuthor: postData });
         if (req.user.id != postData.author) return res.status(401).json({ message: "only the author can edit a post" });
         const previousTags = postData.tags;
         //find new tag and excluded tags

@@ -26,7 +26,7 @@ async function updatePost(req, res) {
         for (let key of Object.keys(updatedPost)) {
             if (!updatedPost[key]) delete updatedPost[key];
         };
-        console.log(updatedPost);
+
         if (Object.keys(updatedPost).length < 1) return res.status(400).json({ message: "no fields to update post" });
         const postData = await mongoose.models.Posts.findById(postId).catch(e => null);
         if (!postData) return res.status(400).json({ message: "Invalid PostId" });
@@ -79,7 +79,7 @@ async function listPosts(req, res) {
 
 async function getPost(req, res) {
     const postId = req.params.postId || null;
-    const postData = await mongoose.models.Posts.findOneAndUpdate({ _id: postId }, { $inc: { views: 1 } }).populate('author', ['_id', 'userName', 'imagePath', 'verified']).select("-__v -reports").catch(_ => null);
+    const postData = await mongoose.models.Posts.findOneAndUpdate({ _id: postId }, { $inc: { views: 1 } }).populate('author', ['_id', 'userName', 'imagePath', 'verified', 'firstName', 'middleName', 'lastName']).select("-__v -reports").catch(_ => null);
     if (postData) {
         postData._doc.isLiked = postData.likes.includes(req.user.id);
         postData._doc.numberOfLikes = postData.likes.length;
@@ -99,7 +99,7 @@ async function searchPost(req, res) {
     if (!searchString || (searchString.length <= 1)) return res.status(400).json({ message: "provide search with min length 2 " });
     const responseData = [];
     const searchResult = await mongoose.models.Posts.fuzzySearch(searchString).catch(e => []);
-    console.log(searchResult);
+
 
     for (let i = 0; i < searchResult.length; i++) {
         const result = searchResult[i];

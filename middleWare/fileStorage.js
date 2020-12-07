@@ -11,7 +11,7 @@ const upload = multer({
     }),
     fileFilter: (req, file, cb) => cb(null, (file.mimetype.split('/')[0] === 'image')),
     limits: {
-        fileSize: 1024 * 1024 * 2
+        fileSize: 1024 * 1024 * 4
     }
 });
 

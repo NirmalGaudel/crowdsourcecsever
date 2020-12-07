@@ -45,7 +45,7 @@ const ValidateUserSignUP = [
     .custom((password, { req }) => (password === req.body.confirmPassword))
     .withMessage("confirmPassword don't match with password"),
     body('gender').optional().isIn(['M', 'F', 'O']).withMessage("gender must be one of ['M','F','O']"),
-    body('bio').optional().isLength({ max: 200 }).withMessage("bio must have less than 200 characters"),
+    body('bio').optional().isLength({ max: 500 }).withMessage("bio must have less than 500 characters"),
     body('imagePath').notEmpty().withMessage('imagePath is required').custom(imagePath => {
         try {
             const ImageName = imagePath.split('.')[0];
@@ -72,10 +72,10 @@ const ValidateCreatePost = [
     .isLength({ max: 100 }).withMessage("postTitle must have less than 100 characters"),
     body('postContent').notEmpty().withMessage('postContent is required')
     .isLength({ min: 20 }).withMessage('postContent must have more than 20 characters')
-    .isLength({ max: 2000 }).withMessage('postContent must have less than 2000 characters'),
+    .isLength({ max: 5000 }).withMessage('postContent must have less than 5000 characters'),
     body('postDescription').notEmpty().withMessage('postDescription is required')
     .isLength({ min: 20 }).withMessage('postDescription must have more than 20 characters')
-    .isLength({ max: 200 }).withMessage('postDescription must have less than 200 characters'),
+    .isLength({ max: 500 }).withMessage('postDescription must have less than 500 characters'),
     body('tags').notEmpty().withMessage('post requires tags').toArray().isArray({ min: 5, max: 10 }).withMessage('tags must be an array of min length 5 and max length 10')
     .custom(tags => {
         for (let i = 0; i < tags.length; i++) {
@@ -96,10 +96,10 @@ const ValidateUpdatePost = [
     .isLength({ max: 100 }).withMessage("postTitle must have less than 100 characters"),
     body('postContent').optional()
     .isLength({ min: 20 }).withMessage('postContent must have more than 20 characters')
-    .isLength({ max: 2000 }).withMessage('postContent must have less than 2000 characters'),
+    .isLength({ max: 5000 }).withMessage('postContent must have less than 5000 characters'),
     body('postDescription').optional()
     .isLength({ min: 20 }).withMessage('postDescription must have more than 20 characters')
-    .isLength({ max: 200 }).withMessage('postDescription must have less than 200 characters'),
+    .isLength({ max: 500 }).withMessage('postDescription must have less than 500 characters'),
     body('tags').optional().toArray().isArray({ min: 5, max: 10 }).withMessage('tags must be an array of min length 5 and max length 10')
     .custom(tags => {
         for (let i = 0; i < tags.length; i++) {
@@ -116,7 +116,7 @@ const ValidateUpdatePost = [
 
 const ValidateComment = [
     body('commentContent').not().isEmpty().withMessage("comment requires commentContent")
-    .isLength({ max: 2000 }).withMessage("comment must have less than 2000 characters")
+    .isLength({ max: 5000 }).withMessage("comment must have less than 5000 characters")
 ]
 
 const ValidateUpdateUser = [
@@ -153,7 +153,7 @@ const ValidateUpdateUser = [
     .isLength({ min: 3 }).withMessage("lastName must have more than 3 characters")
     .isLength({ max: 20 }).withMessage("lastName must have less than 20 characters"),
     body('gender').optional().isIn(['M', 'F', 'O']).withMessage("gender must be one of ['M','F','O']"),
-    body('bio').optional().isLength({ max: 200 }).withMessage("bio must have less than 200 characters"),
+    body('bio').optional().isLength({ max: 500 }).withMessage("bio must have less than 500 characters"),
 
     body('intrests').optional().custom(intrests => {
         return Promise.reject("Feature not yet been implimented")

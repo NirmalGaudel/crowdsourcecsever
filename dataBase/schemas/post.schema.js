@@ -34,13 +34,13 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: [true, "the post description is required  "],
         minlength: [20, 'postDescription must be longer than 20 characters'],
-        maxlength: [200, 'postDescription must be shorter than 200 characters']
+        maxlength: [500, 'postDescription must be shorter than 500 characters']
     },
     postContent: {
         type: String,
         required: [true, 'postContent is required for a post'],
         minlength: [20, 'Post must be longer than 20 characters'],
-        maxlength: [2000, 'Post must be shorter than 2000 characters']
+        maxlength: [5000, 'Post must be shorter than 5000 characters']
     },
     postLinks: {
         type: [String],
