@@ -179,6 +179,7 @@ async function editUserDetails(req, res) {
 
 async function deleteUser(req, res) {
     const userId = req.params.userId || null;
+
     if (req.user.id !== userId) return res.status(401).json({ message: 'authentication failed' });
     const userData = await mongoose.models.Users.findById(userId).catch(_ => null);
     if (!userData) return res.status(404).json({ message: "User not found" });
@@ -210,17 +211,57 @@ async function logOut(req, res) {
 async function changePassword(req, res) {
     const result = validationResult(req);
     if (result.errors.length > 0) return res.status(412).json(result.errors);
-    try {
-        const hashedPassword = await hashPassword(req.body.password).catch(e => {
-            e.status = 500;
-            throw e;
-        });
-        await mongoose.models.Users.findByIdAndUpdate(req.user.id, { password: hashedPassword });
-        logOut(req, res);
+    const passwordMatch = mongoose.models.Users.findById(req.user.id).select('password').then(async user => {
+        const result = await verifyPassword(req.body.oldPassword, user.password);
+        return result
 
-    } catch (err) {
-        return res.status(err.status || 400).json(err);
+    }).catch(err => {
+        return false;
+    })
+    if (!passwordMatch) {
+        return res.status(412).send([{ value: req.body.oldPassword, msg: 'Incorrect Password', param: 'Old Password', location: 'body' }, { msg: err.message }]);
+    } else {
+        try {
+            const hashedPassword = await hashPassword(req.body.password).catch(e => {
+                e.status = 500;
+                throw e;
+            });
+            await mongoose.models.Users.findByIdAndUpdate(req.user.id, { password: hashedPassword });
+            logOut(req, res);
+
+        } catch (err) {
+            return res.status(err.status || 400).json(err);
+        }
     }
+
+
+    // const userPassWord = await mongoose.models.Users.findById(req.user.id).select("password").then(async userData => {
+    //     return userData.password;
+    // }).catch(err => {
+    //     return "";
+    // });
+
+    // console.log("HERE", password, userPassWord);
+
+    // const passwordMatch = await verifyPassword(password, userPassWord);
+
+    // console.log("Password is valid", passwordMatch);
+
+    // if (!passwordMatch) {
+    //     return res.status(412).send([{ value: req.body.oldPassword, msg: 'Incorrect Password', param: 'Old Password', location: 'body' }])
+    // } else {
+    //     try {
+    //         const hashedPassword = await hashPassword(req.body.password).catch(e => {
+    //             e.status = 500;
+    //             throw e;
+    //         });
+    //         await mongoose.models.Users.findByIdAndUpdate(req.user.id, { password: hashedPassword });
+    //         logOut(req, res);
+
+    //     } catch (err) {
+    //         return res.status(err.status || 400).json(err);
+    //     }
+    // }
 
 }
 

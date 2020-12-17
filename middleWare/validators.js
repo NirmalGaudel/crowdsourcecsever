@@ -162,6 +162,16 @@ const ValidateUpdateUser = [
 ]
 
 const ValidatePasswordChange = [
+
+    body('oldPassword').notEmpty().withMessage("Invalid Old Password")
+    .matches(/(?=.*[A-Z])/).withMessage("Invalid Old Password")
+    .matches(/(?=.*[a-z])/).withMessage("Invalid Old Password")
+    .matches(/(?=.*\d)/).withMessage("Invalid Old Password")
+    .isLength({ min: 6 })
+    .withMessage("Invalid Old Password")
+    .isLength({ max: 20 })
+    .withMessage("Invalid Old Password"),
+
     body('password').notEmpty().withMessage("password is required")
     .matches(/(?=.*[A-Z])/).withMessage("password requires at least one uppurcase letter")
     .matches(/(?=.*[a-z])/).withMessage("password requires at least one lowercase letter")
