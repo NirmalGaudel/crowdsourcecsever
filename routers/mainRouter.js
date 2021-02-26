@@ -9,11 +9,6 @@ const { singleImageStore } = require('../middleWare/fileStorage');
 const { manageTagsForCreatePost, manageTagsForDeletePost, manageTagsForUpdatePost } = require('../middleWare/tagMiddleWares');
 const { ValidateCreatePost, ValidateComment, ValidateUpdateUser, ValidateUpdatePost } = require('../middleWare/validators');
 
-mainRouter.get('/', (req, res, next) => {
-    const response = { message: "This is Test API" };
-    return res.status(200).json({...response });
-});
-
 //ImageUpload
 mainRouter.post('/uploadImage', singleImageStore("imagePath"), (req, res) => {
     return res.status(req.files ? 200 : 500).send(req.files || { message: "Internal server error" });

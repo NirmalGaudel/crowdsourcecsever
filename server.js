@@ -7,6 +7,7 @@ const mainRouter = require("./routers/mainRouter");
 const testRouter = require("./routers/testRouter");
 const requireAuth = require("./middleWare/requireAuth");
 const authRouter = require("./routers/authRouter");
+const { index } = require("./dataBase/schemas/tag.schema");
 require("./dataBase/utils/dbConnect");
 app.use(cors());
 app.use(expressSanitizer());
@@ -22,13 +23,14 @@ app.use("/auth", authRouter)
 app.use("/api", requireAuth, mainRouter);
 app.use("/test", testRouter);
 app.get("/favicon.ico", (req, res) => res.sendFile("./favicon.ico", { root: "./" }));
+//view engine
+app.set('views', require('path').join(__dirname, 'public'));
+app.set('view engine', 'ejs');
+app.engine('html', require('ejs').renderFile);
 
 
 app.use((req, res, next) => {
-    const error = new Error('Not found');
-    error.status = 404;
-    res.redirect('/')
-        // next(error);
+    res.render("index.html");
 });
 
 app.use((error, req, res, next) => {
