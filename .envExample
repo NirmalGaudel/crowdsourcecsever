@@ -1,0 +1,10 @@
+PORT=8080
+
+LOCAL_DBURL=mongodb://localhost:27017/CrowdSource
+ATLAS_DBURL=mongodb+srv://<dbuser>:<password>@maincluster.xnwd5.mongodb.net/masterDB?retryWrites=true&w=majority
+ENVIRONMENT = Development
+
+JWT_SIGN_SECRET = yourSecretKey
+JWT_EXPIRE = 1d
+
+REFRESH_TOKEN_SECRET = anotherSecretKey
